@@ -1,10 +1,16 @@
 # Substack Archiver GUI
 
-A modern, user-friendly Windows application that downloads entire Substack newsletter archives to your computer and optionally converts them into an ePub file suitable for reading on a Kindle, Kobo, or any other e-reader.
+A 100% vibe-coded GUI Windows application that downloads Substack newsletter archives to your computer locally, and optionally converts them into an ePub file suitable for reading on a Kindle, Kobo, or any other e-reader.
 
-No command-line knowledge required.
+This is just a vibe-coded GUI - the real work is being done behind the scenes by two excellent open-source tools that other authors have very generously made available — [sbstck-dl](https://github.com/alexferrari88/sbstck-dl) and [Pandoc](https://pandoc.org/).
+
+All this repo's app does is present a GUI that builds and runs the commands for you, showing you exactly what it is doing in real time.
+
+No command-line knowledge is therefore required once everything has been set up the first time.
 
 > **Screenshot placeholder** — *Add a screenshot of the main app window here once running*
+
+I have only tested it on a Windows 11 computer. AI wrote most of it. AI also wrote most of this readme. It comes with no functionality or security guarentees whatsoever. Caveat emptor.
 
 ---
 
@@ -13,7 +19,6 @@ No command-line knowledge required.
 1. **Downloads** every post from any Substack newsletter (free or paid) to a folder on your computer, in Markdown, HTML, or plain text format — including images and file attachments if you want them.
 2. **Converts** those downloaded files into a single ePub book, with the posts in chronological order and an optional table of contents.
 
-Behind the scenes the app calls two excellent open-source tools — [sbstck-dl](https://github.com/alexferrari88/sbstck-dl) and [Pandoc](https://pandoc.org/) — but you never have to touch the command line. The app builds and runs the commands for you, and shows you exactly what it is doing in real time.
 
 ---
 
@@ -281,7 +286,7 @@ Try running `pip install --upgrade customtkinter` to get the latest version of t
 
 ## Acknowledgements
 
-This app is a GUI wrapper around two excellent open-source tools:
+This app is a low quality vibe-coded GUI wrapper around two excellent open-source tools:
 
 - **[sbstck-dl](https://github.com/alexferrari88/sbstck-dl)** by Alex Ferrari — Substack downloader
 - **[Pandoc](https://pandoc.org/)** by John MacFarlane — Universal document converter
