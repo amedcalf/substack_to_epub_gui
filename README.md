@@ -10,7 +10,8 @@ No command-line knowledge is therefore required once everything has been set up 
 
 I have only tested it on a Windows 11 computer. AI wrote most of it. AI also wrote most of this readme. It comes with no functionality or security guarentees whatsoever. Caveat emptor.
 
-<img width="1909" height="1020" alt="ssmain" src="https://github.com/user-attachments/assets/42913da3-9b53-49a6-97bb-8951419e2400" />
+<img width="828" height="1024" alt="ss_main" src="https://github.com/user-attachments/assets/6ac17ebd-1c17-4036-b06c-7e1fd1eb0a7c" />
+
 
 ---
 
@@ -95,8 +96,7 @@ The app has three tabs: **Download**, **ePub Conversion**, and **Settings**, plu
 
 Use this tab to download a Substack newsletter archive to your computer.
 
-<img width="1909" height="1020" alt="ssmain" src="https://github.com/user-attachments/assets/32e508d0-1d5d-4012-9cba-56a35f5b97e1" />
-
+<img width="828" height="1024" alt="ss_main" src="https://github.com/user-attachments/assets/703e635e-de26-4318-adcd-34f4335721a6" />
 
 #### Source — Substack URL
 
