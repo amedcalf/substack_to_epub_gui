@@ -68,7 +68,7 @@ winget install --id JohnMacFarlane.Pandoc
 2. **Install the Python GUI dependencies** by opening a Command Prompt in the project folder and running:
 
 ```
-pip install customtkinter tkcalendar
+pip install customtkinter
 ```
 
 3. **Run the app:**

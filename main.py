@@ -7,7 +7,7 @@ Uses sbstck-dl for downloading and pandoc for ePub conversion.
 No command-line knowledge required.
 
 Dependencies (install via pip):
-    pip install customtkinter tkcalendar
+    pip install customtkinter
     pip install sbstck-dl
 """
 
@@ -23,7 +23,6 @@ import tkinter.filedialog as filedialog
 import tkinter.messagebox as messagebox
 
 import customtkinter as ctk
-from tkcalendar import DateEntry
 
 
 # ---------------------------------------------------------------------------
@@ -256,22 +255,18 @@ class SubstackArchiverApp(ctk.CTk):
         self.date_frame.grid_columnconfigure(3, weight=0)
 
         ctk.CTkLabel(self.date_frame, text="After:").grid(row=0, column=0, sticky="w", padx=(0, 4))
-        self.after_date_picker = DateEntry(
-            self.date_frame, width=12, date_pattern="yyyy-mm-dd", state="disabled",
-            background="gray30", foreground="white", borderwidth=2,
+        self.after_date_picker = ctk.CTkEntry(
+            self.date_frame, textvariable=self.after_date_var,
+            placeholder_text="YYYY-MM-DD", width=130, state="disabled",
         )
         self.after_date_picker.grid(row=0, column=1, sticky="w", padx=(0, 16))
-        self.after_date_picker.bind("<<DateEntrySelected>>",
-                                    lambda _: self._update_download_command())
 
         ctk.CTkLabel(self.date_frame, text="Before:").grid(row=0, column=2, sticky="w", padx=(0, 4))
-        self.before_date_picker = DateEntry(
-            self.date_frame, width=12, date_pattern="yyyy-mm-dd", state="disabled",
-            background="gray30", foreground="white", borderwidth=2,
+        self.before_date_picker = ctk.CTkEntry(
+            self.date_frame, textvariable=self.before_date_var,
+            placeholder_text="YYYY-MM-DD", width=130, state="disabled",
         )
         self.before_date_picker.grid(row=0, column=3, sticky="w")
-        self.before_date_picker.bind("<<DateEntrySelected>>",
-                                     lambda _: self._update_download_command())
 
         self.date_frame.grid_remove()
         row += 1
@@ -707,8 +702,8 @@ class SubstackArchiverApp(ctk.CTk):
         cmd += ["-f", fmt]
 
         if self.dates_enabled_var.get():
-            after = self.after_date_picker.get().strip()
-            before = self.before_date_picker.get().strip()
+            after = self.after_date_var.get().strip()
+            before = self.before_date_var.get().strip()
             if after:
                 cmd += ["--after", after]
             if before:
@@ -973,8 +968,8 @@ class SubstackArchiverApp(ctk.CTk):
 
         if self.dates_enabled_var.get():
             date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-            after = self.after_date_picker.get().strip()
-            before = self.before_date_picker.get().strip()
+            after = self.after_date_var.get().strip()
+            before = self.before_date_var.get().strip()
             if after and not date_pattern.match(after):
                 return "After date must be in YYYY-MM-DD format."
             if before and not date_pattern.match(before):
