@@ -257,14 +257,14 @@ class SubstackArchiverApp(ctk.CTk):
         ctk.CTkLabel(self.date_frame, text="After:").grid(row=0, column=0, sticky="w", padx=(0, 4))
         self.after_date_picker = ctk.CTkEntry(
             self.date_frame, textvariable=self.after_date_var,
-            placeholder_text="YYYY-MM-DD", width=130, state="disabled",
+            placeholder_text="YYYY-MM-DD", width=130,
         )
         self.after_date_picker.grid(row=0, column=1, sticky="w", padx=(0, 16))
 
         ctk.CTkLabel(self.date_frame, text="Before:").grid(row=0, column=2, sticky="w", padx=(0, 4))
         self.before_date_picker = ctk.CTkEntry(
             self.date_frame, textvariable=self.before_date_var,
-            placeholder_text="YYYY-MM-DD", width=130, state="disabled",
+            placeholder_text="YYYY-MM-DD", width=130,
         )
         self.before_date_picker.grid(row=0, column=3, sticky="w")
 
