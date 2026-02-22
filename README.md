@@ -8,9 +8,9 @@ All this repo's app does is present a GUI that builds and runs the commands for 
 
 No command-line knowledge is therefore required once everything has been set up the first time.
 
-> **Screenshot placeholder** — *Add a screenshot of the main app window here once running*
-
 I have only tested it on a Windows 11 computer. AI wrote most of it. AI also wrote most of this readme. It comes with no functionality or security guarentees whatsoever. Caveat emptor.
+
+<img width="1909" height="1020" alt="ssmain" src="https://github.com/user-attachments/assets/42913da3-9b53-49a6-97bb-8951419e2400" />
 
 ---
 
@@ -95,7 +95,8 @@ The app has three tabs: **Download**, **ePub Conversion**, and **Settings**, plu
 
 Use this tab to download a Substack newsletter archive to your computer.
 
-> **Screenshot placeholder** — *Add a screenshot of the Download tab here*
+<img width="1909" height="1020" alt="ssmain" src="https://github.com/user-attachments/assets/32e508d0-1d5d-4012-9cba-56a35f5b97e1" />
+
 
 #### Source — Substack URL
 
@@ -143,7 +144,7 @@ Tick "Filter by date range" to download only posts published within a specific w
 
 If you want to download posts from a Substack you **pay for**, you need to provide your session cookie. This proves to Substack's servers that you are a paying subscriber.
 
-> **Screenshot placeholder** — *Add a screenshot of the expanded cookie section here*
+<img width="991" height="245" alt="cookie" src="https://github.com/user-attachments/assets/ee3c516b-1e2b-4b1e-a69c-6001c379e3b7" />
 
 Click **Show Cookie Settings** to expand this section.
 
@@ -169,7 +170,6 @@ Click **Start Download**. The button will grey out while the download runs, and 
 
 When the download completes, a dialog appears with three options:
 
-> **Screenshot placeholder** — *Add a screenshot of the completion dialog here*
 
 | Button | Action |
 |--------|--------|
@@ -185,7 +185,7 @@ If you used **Dry run**, only "Return to App" is shown (since no files were down
 
 Use this tab to convert a folder of Markdown files into a single ePub book.
 
-> **Screenshot placeholder** — *Add a screenshot of the ePub Conversion tab here*
+<img width="1042" height="1020" alt="epub" src="https://github.com/user-attachments/assets/590b6083-0d18-4136-aeb3-5a7e3a41c559" />
 
 #### Source
 
@@ -225,8 +225,6 @@ When complete, a dialog appears:
 ---
 
 ### Settings Tab
-
-> **Screenshot placeholder** — *Add a screenshot of the Settings tab here*
 
 #### Executable Paths
 
