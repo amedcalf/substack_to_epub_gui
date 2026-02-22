@@ -1019,7 +1019,8 @@ class SubstackArchiverApp(ctk.CTk):
             return
 
         cmd = self._build_download_cmd()
-        self._start_command(cmd, self.download_btn, "Start Download", "Downloading…")
+        self._start_command(cmd, self.download_btn, "Start Download", "Downloading…",
+                            operation="download")
 
     def _on_convert_click(self) -> None:
         if self._is_running:
@@ -1036,13 +1037,16 @@ class SubstackArchiverApp(ctk.CTk):
             messagebox.showerror("Error", "Could not build pandoc command.")
             return
 
-        self._start_command(cmd, self.convert_btn, "Convert to ePub", "Converting…")
+        self._start_command(cmd, self.convert_btn, "Convert to ePub", "Converting…",
+                            operation="epub")
 
     def _start_command(self, cmd: list, btn: ctk.CTkButton,
-                       normal_text: str, running_text: str) -> None:
+                       normal_text: str, running_text: str,
+                       operation: str = "") -> None:
         self._is_running = True
         self._active_btn = btn
         self._active_btn_normal_text = normal_text
+        self._current_operation = operation  # "download" or "epub"
         btn.configure(state="disabled", text=running_text)
         t = threading.Thread(target=self._run_command, args=(cmd,), daemon=True)
         t.start()
@@ -1065,12 +1069,14 @@ class SubstackArchiverApp(ctk.CTk):
         if sys.platform == "win32":
             kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
 
+        success = False
         try:
             process = subprocess.Popen(cmd, **kwargs)
             for line in process.stdout:
                 self._log(line)
             process.wait()
-            if process.returncode == 0:
+            success = (process.returncode == 0)
+            if success:
                 self._log(f"\n✓ Completed successfully (exit code 0)\n")
             else:
                 self._log(f"\n✗ Process exited with code {process.returncode}\n")
@@ -1081,14 +1087,136 @@ class SubstackArchiverApp(ctk.CTk):
         except Exception as exc:
             self._log(f"\n[ERROR] {exc}\n")
         finally:
-            self.after(0, self._on_command_finished)
+            _success = success  # capture for lambda closure
+            self.after(0, lambda: self._on_command_finished(_success))
 
-    def _on_command_finished(self) -> None:
+    def _on_command_finished(self, success: bool) -> None:
         self._is_running = False
         if hasattr(self, "_active_btn"):
             self._active_btn.configure(
                 state="normal", text=self._active_btn_normal_text
             )
+
+        if not success:
+            return  # errors are already shown in the log
+
+        op = getattr(self, "_current_operation", "")
+        if op == "download":
+            output_folder = self.output_dir_var.get().strip()
+            is_dry_run = self.dry_run_var.get()
+            self._show_download_done_dialog(output_folder, is_dry_run)
+        elif op == "epub":
+            epub_path = self.epub_output_var.get().strip()
+            self._show_epub_done_dialog(epub_path)
+
+    # ------------------------------------------------------------------
+    # Completion dialogs
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _center_over_parent(dialog: ctk.CTkToplevel, parent, width: int, height: int) -> None:
+        """Position dialog in the centre of the parent window."""
+        parent.update_idletasks()
+        px, py = parent.winfo_x(), parent.winfo_y()
+        pw, ph = parent.winfo_width(), parent.winfo_height()
+        x = px + (pw - width) // 2
+        y = py + (ph - height) // 2
+        dialog.geometry(f"{width}x{height}+{x}+{y}")
+
+    def _show_download_done_dialog(self, output_folder: str, is_dry_run: bool) -> None:
+        dlg = ctk.CTkToplevel(self)
+        dlg.title("Download Complete")
+        dlg.resizable(False, False)
+        dlg.grab_set()  # block interaction with main window until dismissed
+
+        if is_dry_run:
+            icon = "🔍"
+            heading = "Dry Run Complete"
+            detail = (
+                "No files were downloaded — this was a preview only.\n\n"
+                "Uncheck 'Dry run' and click Start Download to download for real."
+            )
+        else:
+            icon = "✓"
+            heading = "Download Complete!"
+            detail = f"Files saved to:\n{output_folder}"
+
+        # Content
+        ctk.CTkLabel(dlg, text=f"{icon}  {heading}",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(padx=30, pady=(24, 8))
+        ctk.CTkLabel(dlg, text=detail, justify="left", wraplength=340).pack(
+            padx=30, pady=(0, 20))
+
+        # Separator line
+        ctk.CTkFrame(dlg, height=1, fg_color="gray50").pack(fill="x", padx=20, pady=(0, 16))
+
+        # Buttons
+        btn_frame = ctk.CTkFrame(dlg, fg_color="transparent")
+        btn_frame.pack(padx=20, pady=(0, 24))
+
+        if not is_dry_run:
+            def go_to_epub():
+                dlg.destroy()
+                self.epub_source_var.set(os.path.normpath(output_folder))
+                # Suggest a default epub filename in the same folder
+                suggested = os.path.normpath(os.path.join(output_folder, "archive.epub"))
+                self.epub_output_var.set(suggested)
+                self.tabview.set("ePub Conversion")
+
+            ctk.CTkButton(btn_frame, text="Create ePub →", width=130,
+                          command=go_to_epub).pack(side="left", padx=6)
+
+            def show_files():
+                dlg.destroy()
+                self._open_in_explorer(output_folder)
+
+            ctk.CTkButton(btn_frame, text="Show Files", width=110,
+                          fg_color="transparent", border_width=1,
+                          command=show_files).pack(side="left", padx=6)
+
+        ctk.CTkButton(btn_frame, text="Return to App", width=120,
+                      fg_color="transparent", border_width=1,
+                      command=dlg.destroy).pack(side="left", padx=6)
+
+        self._center_over_parent(dlg, self, 420, 240 if is_dry_run else 260)
+
+    def _show_epub_done_dialog(self, epub_path: str) -> None:
+        dlg = ctk.CTkToplevel(self)
+        dlg.title("Conversion Complete")
+        dlg.resizable(False, False)
+        dlg.grab_set()
+
+        epub_folder = os.path.dirname(epub_path) or epub_path
+
+        ctk.CTkLabel(dlg, text="✓  ePub Created!",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(padx=30, pady=(24, 8))
+        ctk.CTkLabel(dlg, text=f"Saved to:\n{epub_path}",
+                     justify="left", wraplength=340).pack(padx=30, pady=(0, 20))
+
+        ctk.CTkFrame(dlg, height=1, fg_color="gray50").pack(fill="x", padx=20, pady=(0, 16))
+
+        btn_frame = ctk.CTkFrame(dlg, fg_color="transparent")
+        btn_frame.pack(padx=20, pady=(0, 24))
+
+        def show_file():
+            dlg.destroy()
+            self._open_in_explorer(epub_folder)
+
+        ctk.CTkButton(btn_frame, text="Show File", width=120,
+                      command=show_file).pack(side="left", padx=6)
+        ctk.CTkButton(btn_frame, text="Return to App", width=130,
+                      fg_color="transparent", border_width=1,
+                      command=dlg.destroy).pack(side="left", padx=6)
+
+        self._center_over_parent(dlg, self, 420, 220)
+
+    @staticmethod
+    def _open_in_explorer(path: str) -> None:
+        """Open Windows Explorer at the given folder path."""
+        try:
+            subprocess.Popen(["explorer", os.path.normpath(path)])
+        except Exception as exc:
+            messagebox.showerror("Error", f"Could not open Explorer:\n{exc}")
 
     # ------------------------------------------------------------------
     # Logging (thread-safe via queue)
