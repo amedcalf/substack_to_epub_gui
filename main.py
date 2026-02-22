@@ -18,6 +18,8 @@ import queue
 import threading
 import subprocess
 import re
+import calendar
+from datetime import date, datetime
 import tkinter as tk
 import tkinter.filedialog as filedialog
 import tkinter.messagebox as messagebox
@@ -251,22 +253,30 @@ class SubstackArchiverApp(ctk.CTk):
 
         self.date_frame = ctk.CTkFrame(f, fg_color="transparent")
         self.date_frame.grid(row=row, column=0, columnspan=3, sticky="ew", padx=6, pady=2)
-        self.date_frame.grid_columnconfigure(1, weight=0)
-        self.date_frame.grid_columnconfigure(3, weight=0)
 
         ctk.CTkLabel(self.date_frame, text="After:").grid(row=0, column=0, sticky="w", padx=(0, 4))
         self.after_date_picker = ctk.CTkEntry(
             self.date_frame, textvariable=self.after_date_var,
-            placeholder_text="YYYY-MM-DD", width=130,
+            placeholder_text="YYYY-MM-DD", width=115,
         )
-        self.after_date_picker.grid(row=0, column=1, sticky="w", padx=(0, 16))
+        self.after_date_picker.grid(row=0, column=1, sticky="w", padx=(0, 2))
+        ctk.CTkButton(
+            self.date_frame, text="📅", width=32, height=28,
+            fg_color="transparent", border_width=1,
+            command=lambda: self._show_date_picker(self.after_date_var),
+        ).grid(row=0, column=2, sticky="w", padx=(0, 14))
 
-        ctk.CTkLabel(self.date_frame, text="Before:").grid(row=0, column=2, sticky="w", padx=(0, 4))
+        ctk.CTkLabel(self.date_frame, text="Before:").grid(row=0, column=3, sticky="w", padx=(0, 4))
         self.before_date_picker = ctk.CTkEntry(
             self.date_frame, textvariable=self.before_date_var,
-            placeholder_text="YYYY-MM-DD", width=130,
+            placeholder_text="YYYY-MM-DD", width=115,
         )
-        self.before_date_picker.grid(row=0, column=3, sticky="w")
+        self.before_date_picker.grid(row=0, column=4, sticky="w", padx=(0, 2))
+        ctk.CTkButton(
+            self.date_frame, text="📅", width=32, height=28,
+            fg_color="transparent", border_width=1,
+            command=lambda: self._show_date_picker(self.before_date_var),
+        ).grid(row=0, column=5, sticky="w")
 
         self.date_frame.grid_remove()
         row += 1
@@ -1204,6 +1214,110 @@ class SubstackArchiverApp(ctk.CTk):
                       command=dlg.destroy).pack(side="left", padx=6)
 
         self._center_over_parent(dlg, self, 420, 220)
+
+    def _show_date_picker(self, target_var: ctk.StringVar) -> None:
+        """Open a compact calendar popup and write the chosen date (YYYY-MM-DD) into target_var."""
+        # Initialise to whatever is already in the field, or today
+        try:
+            start = datetime.strptime(target_var.get().strip(), "%Y-%m-%d").date()
+        except ValueError:
+            start = date.today()
+
+        view = [start.year, start.month]   # mutable list so inner functions can update it
+
+        popup = ctk.CTkToplevel(self)
+        popup.title("Select Date")
+        popup.resizable(False, False)
+        popup.grab_set()
+
+        # ── Header: ‹  Month Year  › ─────────────────────────────────
+        hdr = ctk.CTkFrame(popup, fg_color="transparent")
+        hdr.pack(fill="x", padx=12, pady=(12, 4))
+
+        month_lbl = ctk.CTkLabel(hdr, text="", width=170, anchor="center",
+                                 font=ctk.CTkFont(size=13, weight="bold"))
+
+        ctk.CTkButton(hdr, text="‹", width=30, height=28,
+                      command=lambda: _prev()).pack(side="left")
+        month_lbl.pack(side="left", expand=True)
+        ctk.CTkButton(hdr, text="›", width=30, height=28,
+                      command=lambda: _next()).pack(side="right")
+
+        # ── Day-name header row + 6×7 day buttons ────────────────────
+        grid_f = ctk.CTkFrame(popup, fg_color="transparent")
+        grid_f.pack(padx=12, pady=(0, 4))
+
+        for col, name in enumerate(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]):
+            ctk.CTkLabel(grid_f, text=name, width=36, anchor="center",
+                         font=ctk.CTkFont(size=11),
+                         text_color="gray60").grid(row=0, column=col, padx=1, pady=(0, 2))
+
+        btns: list[list[ctk.CTkButton]] = []
+        for r in range(6):
+            row_btns = []
+            for c in range(7):
+                b = ctk.CTkButton(grid_f, text="", width=36, height=30, corner_radius=4,
+                                  fg_color="transparent",
+                                  hover_color=("gray80", "gray30"),
+                                  text_color=("gray10", "gray90"))
+                b.grid(row=r + 1, column=c, padx=1, pady=1)
+                row_btns.append(b)
+            btns.append(row_btns)
+
+        # ── "Today" shortcut ─────────────────────────────────────────
+        ctk.CTkButton(popup, text="Today", height=28,
+                      fg_color="transparent", border_width=1,
+                      command=lambda: _pick(date.today())).pack(pady=(2, 10))
+
+        def _refresh() -> None:
+            y, m = view
+            month_lbl.configure(text=f"{calendar.month_name[m]} {y}")
+            try:
+                selected = datetime.strptime(target_var.get().strip(), "%Y-%m-%d").date()
+            except ValueError:
+                selected = None
+            today = date.today()
+            weeks = calendar.monthcalendar(y, m)
+            for r in range(6):
+                for c in range(7):
+                    b = btns[r][c]
+                    day_num = weeks[r][c] if r < len(weeks) else 0
+                    if day_num == 0:
+                        b.configure(text="", state="disabled",
+                                    fg_color="transparent", command=lambda: None)
+                    else:
+                        d = date(y, m, day_num)
+                        if d == selected:
+                            fg, tc = ("#1f6aa5", "#1f6aa5"), ("white", "white")
+                        elif d == today:
+                            fg, tc = ("gray80", "gray25"), ("gray10", "gray90")
+                        else:
+                            fg, tc = "transparent", ("gray10", "gray90")
+                        b.configure(text=str(day_num), state="normal",
+                                    fg_color=fg, text_color=tc,
+                                    command=lambda d=d: _pick(d))
+
+        def _pick(d: date) -> None:
+            target_var.set(d.strftime("%Y-%m-%d"))
+            popup.destroy()
+            self._update_download_command()
+
+        def _prev() -> None:
+            if view[1] == 1:
+                view[0] -= 1; view[1] = 12
+            else:
+                view[1] -= 1
+            _refresh()
+
+        def _next() -> None:
+            if view[1] == 12:
+                view[0] += 1; view[1] = 1
+            else:
+                view[1] += 1
+            _refresh()
+
+        _refresh()
+        self._center_over_parent(popup, self, 308, 335)
 
     @staticmethod
     def _open_in_explorer(path: str) -> None:
