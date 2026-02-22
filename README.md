@@ -2,6 +2,9 @@
 
 A 100% vibe-coded GUI Windows application that downloads Substack newsletter archives to your computer locally, and optionally converts them into an ePub file suitable for reading on a Kindle, Kobo, or any other e-reader.
 
+Note that, if you don't mind a slightly fiddly process with your web browser, this does include any paid articles from Substacks that you already pay for. It will *not* let you access any articles that you couldn't already access yourself via their website. The idea is to archive and reformat the things you already have access to - not to bypass paywalls.
+
+
 This is just a vibe-coded GUI - the real work is being done behind the scenes by two excellent open-source tools that other authors have very generously made available — [sbstck-dl](https://github.com/alexferrari88/sbstck-dl) and [Pandoc](https://pandoc.org/).
 
 All this repo's app does is present a GUI that builds and runs the commands for you, showing you exactly what it is doing in real time.
